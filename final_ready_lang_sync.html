@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>منصتك لحجز المواعيد — حجز المواعيد | Your General Appointment Platform Appointments</title>
+  <meta name="description" content="منصة إلكترونية عامة لحجز المواعيد لأي جهة أو خدمة بسهولة وسرعة. منصة رسمية لحجز مواعيد  في الأردن — احجز موعدك إلكترونياً بدون انتظار.">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+  <!-- Map & QR -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <style>
+    :root{
+      --general:#007B83; --bg:#F5F5F5; --card:#ffffff; --text:#1f2937; --muted:#6b7280; --border:#e5e7eb; --accent:#fef3c7;
+    }
+    :root.dark{ --bg:#0b0f14; --card:#0f141b; --text:#e5e7eb; --muted:#94a3b8; --border:#1f2937; --accent:#1f2937; }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:"Cairo","Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    a{color:var(--general);text-decoration:none}
+    .container{max-width:1120px;margin:auto;padding:0 16px}
+    header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.75);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--border)}
+    :root.dark header{background:rgba(15,20,27,.7)}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand img{width:40px;height:40px;border-radius:8px;object-fit:contain;background:#fff;border:1px solid var(--border)}
+    .logo-fallback{width:40px;height:40px;border-radius:10px;background:var(--general);display:none;place-items:center;color:#fff;font-weight:800}
+    .title{font-weight:800}
+    .menu{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+    .menu a{font-size:14px;opacity:.85;color:var(--text)}
+    .menu a.active{color:var(--general);font-weight:800;opacity:1}
+    .btn,.chip{border-radius:12px;border:1px solid var(--border);padding:10px 14px;background:var(--general);color:#fff;cursor:pointer;font-weight:700}
+    .btn.secondary{background:transparent;color:var(--general)}
+    .btn.ghost{background:transparent;color:var(--text)}
+    .lang,.mode{border:1px solid var(--border);padding:6px 10px;border-radius:10px;background:var(--card);cursor:pointer;font-size:12px}
+    .hero{margin-top:16px;border:1px solid var(--border);border-radius:22px;padding:28px;background:
+      radial-gradient(800px 300px at 50% -10%, rgba(242,101,34,.15) 0%, transparent 70%),
+      linear-gradient(180deg, var(--card) 0%, var(--bg) 100%)}
+    .grid{display:grid;gap:24px}
+    @media(min-width:900px){.grid-2{grid-template-columns:1.1fr .9fr}}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px}
+    .muted{color:var(--muted);font-size:14px}
+    .fields{display:grid;gap:14px}
+    @media(min-width:720px){.fields-2{grid-template-columns:1fr 1fr}}
+    label{display:block;font-size:13px;color:#64748b;margin-bottom:6px}
+    :root.dark label{color:#94a3b8}
+    select,input,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font-size:14px}
+    .section{margin-top:18px}
+    .map{height:420px;border-radius:16px;border:1px solid var(--border);overflow:hidden}
+    footer{padding:36px 0;text-align:center;color:var(--muted);font-size:12px}
+    .badge{display:inline-block;background:var(--accent);border:1px solid var(--border);border-radius:999px;padding:4px 10px;font-size:12px}
+    .steps{display:grid;gap:12px}
+    .step{display:flex;gap:10px;align-items:flex-start}
+    .num{width:24px;height:24px;border-radius:999px;background:var(--general);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+    .hidden{display:none!important}
+    .list{display:grid;gap:10px}
+    .item{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--border);border-radius:12px;padding:10px;background:var(--card)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .splash{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--card);z-index:80}
+    .splash.hide{display:none}
+    .sCard{border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center;max-width:560px}
+    .ico{width:56px;height:56px;border-radius:14px;background:var(--general);display:grid;place-items:center;color:#fff;font-weight:800;font-size:24px;margin:0 auto 12px}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:60}
+    .modal.open{display:flex}
+    .dialog{background:var(--card);border-radius:16px;max-width:520px;width:100%;padding:22px;border:1px solid var(--border)}
+    .qr{display:grid;place-items:center;margin-top:10px}
+    .admin-grid{display:grid;gap:12px}
+    @media(min-width:900px){.admin-grid{grid-template-columns:1fr 1fr}}
+    .stat{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--card)}
+    .icon{margin-inline-end:6px}
+  </style>
+</head>
+<body>
+  <!-- Splash -->
+  <div id="splash" class="splash">
+    <div class="sCard">
+      <div class="ico"><i class="ri-bank-line"></i></div>
+      <h3 id="splashTitle" style="margin:6px 0 6px;font-size:22px;font-weight:800;">مرحبًا بك في منصتك لحجز المواعيد</h3>
+      <div class="muted" id="splashSub">جميع خدماتك المصرفية بانتظارك بكل سهولة.</div>
+    </div>
+  </div>
+
+  <header>
+    <div class="container nav">
+      <div class="brand">
+        <img id="brandImg" alt="Your General Appointment Platform logo" onerror="this.style.display='none';document.getElementById('logoFallback').style.display='grid';">
+        <div id="logoFallback" class="logo-fallback">U</div>
+        <div class="title" id="brandTitle">منصتك</div>
+      </div>
+      <nav class="menu">
+        <a href="#" class="navlink active" data-target="home" id="navHome"><i class="ri-home-5-line icon"></i>الرئيسية</a>
+        <a href="#" class="navlink" data-target="booking" id="navBooking"><i class="ri-calendar-check-line icon"></i>الحجز</a>
+        <a href="#" class="navlink" data-target="map" id="navMap"><i class="ri-map-pin-line icon"></i>الخريطة</a>
+        <a href="#" class="navlink" data-target="about" id="navAbout"><i class="ri-information-line icon"></i>من نحن</a>
+        <a href="#" class="navlink" data-target="my" id="navMy"><i class="ri-list-check-2 icon"></i>حجوزاتي</a>
+        <a href="#" class="navlink" data-target="login" id="navLogin"><i class="ri-user-line icon"></i>تسجيل الدخول</a>
+        <a href="#" class="navlink" data-target="support" id="navSupport"><i class="ri-customer-service-2-line icon"></i>الدعم</a>
+        <button class="lang" id="langBtn">English</button>
+        <button class="mode" id="modeBtn" title="Dark/Light">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="app"></main>
+
+  <footer>
+    <div class="container" id="footerTxt">© 2025 منصتك لحجز المواعيد — جميع الحقوق محفوظة.</div>
+  </footer>
+
+  <!-- Success Modal -->
+  <div class="modal" id="successModal">
+    <div class="dialog">
+      <h3 style="margin:0 0 6px;font-weight:800" id="successTitle">تم تأكيد الحجز</h3>
+      <div class="muted" id="successDesc">احتفظ بهذه التذكرة لحين وصولك للفرع.</div>
+      <div class="qr"><canvas id="qrCanvas"></canvas></div>
+      <div class="muted" id="ticketMeta" style="margin-top:8px;font-size:13px"></div>
+      <div class="actions" style="justify-content:flex-end;margin-top:12px">
+        <button class="btn secondary" id="btnClose">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== LOGO SLOT =====
+    const LOGO_URL = 'logo.png';
+    (function(){
+      const img = document.getElementById('brandImg');
+      img.src = LOGO_URL;
+    })();
+  </script>
+
+  <!-- MAIN APP CONTENT -->
+  <script>
+    const _appHTML = `
+      <div class="container">
+        <!-- HOME -->
+        <section id="home" class="hero grid grid-2">
+          <div>
+            <div class="badge" id="heroBadge">حجز إلكتروني آمن</div>
+            <h1 id="heroTitle" style="margin:10px 0 8px;font-size:34px;line-height:1.2;font-weight:800">احجز دورك وأنت ببيتك</h1>
+            <p id="heroText" class="muted" style="font-size:15px">
+              اختر الجهة / الفرع ونوع الخدمة والوقت المناسب لك — بدون طوابير أو انتظار. وفر وقتك وأنجز معاملاتك بسهولة.
+            </p>
+            <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+              <a href="#" class="btn" data-target="booking" id="ctaBook">احجز الآن</a>
+              <a href="#" class="btn secondary" data-target="map" id="ctaMap">فروعنا على الخريطة</a>
+            </div>
+            <div class="section steps">
+              <div class="step"><div class="num">1</div><div id="st1">اختر الجهة / الفرع ونوع الخدمة</div></div>
+              <div class="step"><div class="num">2</div><div id="st2">حدّد التاريخ والوقت وأدخل بياناتك</div></div>
+              <div class="step"><div class="num">3</div><div id="st3">أكد الحجز واستلم تذكرتك (QR)</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="margin:0 0 8px;font-weight:800" id="quickBookTitle">حجز سريع</h3>
+            <form id="quickForm" class="fields fields-2">
+              <div>
+                <label id="lblBank">مزود الخدمة</label>
+                <select id="providerSelect">
+                  <option value="">اختر المزود</option>
+                  <option value="bank">بنك</option>
+                  
+                </select>
+              </div>
+              <div>
+                <label id="lblBranch">الجهة / الفرع</label>
+                <select id="branchSelect"></select>
+              </div>
+              <div>
+                <label id="lblService">نوع الخدمة</label>
+                <select id="serviceSelect"></select>
+              </div>
+              <div>
+                <label id="lblDate">التاريخ</label>
+                <input type="date" id="dateInput">
+              </div>
+              <div>
+                <label id="lblTime">الوقت</label>
+                <input type="time" id="timeInput">
+              </div>
+              <div>
+                <label id="lblName">الاسم</label>
+                <input id="nameInput" placeholder="الاسم الثلاثي">
+              </div>
+              <div>
+                <label id="lblPhone">رقم الهاتف</label>
+                <input id="phoneInput" placeholder="07XXXXXXXX">
+              </div>
+              <div style="grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px">
+                <button class="btn" type="submit" id="btnConfirm">تأكيد الحجز</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- BOOKING PAGE -->
+        <section id="booking"><button class="btn ghost" onclick="show('home')" style="margin-bottom:10px;">العودة للرئيسية</button class="section card hidden">
+          <h3 style="margin:0 0 10px;font-weight:800" id="bookFullTitle">نموذج الحجز</h3>
+          <p class="muted" id="bookFullText">املأ البيانات التالية لتأكيد حجزك.</p>
+          <form id="fullForm" class="fields fields-2" style="margin-top:8px">
+            <div>
+              <label id="lblBank2">مزود الخدمة</label>
+              <select id="providerSelect2">
+                <option value="">اختر المزود</option>
+                <option value="bank">بنك</option>
+                
+              </select>
+            </div>
+            <div>
+              <label id="lblBranch2">الجهة / الفرع</label>
+              <select id="branchSelect2"></select>
+            </div>
+            <div>
+              <label id="lblService2">نوع الخدمة</label>
+              <select id="serviceSelect2"></select>
+            </div>
+            <div>
+              <label id="lblDate2">التاريخ</label>
+              <input type="date" id="dateInput2">
+            </div>
+            <div>
+              <label id="lblTime2">الوقت</label>
+              <input type="time" id="timeInput2">
+            </div>
+            <div>
+              <label id="lblName2">الاسم</label>
+              <input id="nameInput2" placeholder="الاسم الثلاثي">
+            </div>
+            <div>
+              <label id="lblPhone2">رقم الهاتف</label>
+              <input id="phoneInput2" placeholder="07XXXXXXXX">
+            </div>
+            <div style="grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px">
+              <button class="btn" type="submit" id="btnConfirm2">تأكيد الحجز</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- MAP PAGE -->
+        <section id="map"><button class="btn ghost" onclick="show('home')" style="margin-bottom:10px;">العودة للرئيسية</button class="section card hidden">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+            <h3 style="margin:0;font-weight:800" id="mapTitle">خريطة فروع </h3>
+            <div style="display:flex;gap:8px"><select id="cityFilter"></select></div>
+          </div>
+          <div id="mapDiv" class="map" style="margin-top:10px"></div>
+          <div class="muted" style="margin-top:8px" id="mapNote">المواقع تقريبية لأغراض العرض.</div>
+        </section>
+
+        <!-- MY APPOINTMENTS -->
+        <section id="my"><button class="btn ghost" onclick="show('home')" style="margin-bottom:10px;">العودة للرئيسية</button class="section card hidden">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3 style="margin:0;font-weight:800" id="myTitle">حجوزاتي</h3>
+            <div class="actions">
+              <button class="btn ghost" id="btnExportCsv">CSV</button>
+              <button class="btn ghost" id="btnClearAll">🗑️</button>
+            </div>
+          </div>
+          <div id="myList" class="list" style="margin-top:10px"></div>
+        </section>
+
+        <!-- ABOUT -->
+        <section id="about"><button class="btn ghost" onclick="show('home')" style="margin-bottom:10px;">العودة للرئيسية</button class="section card hidden">
+          <h3 style="margin:0 0 10px;font-weight:800" id="aboutTitle">عن المنصة</h3>
+          <p class="muted" id="aboutText">
+            نحن في <strong>منصتك لحجز المواعيد</strong> نؤمن بأن الوقت هو أثمن ما يملكه الإنسان. لذلك أنشأنا منصة رقمية ذكية تتيح لك حجز مواعيدك لدى المؤسسات والجهات المختلفة في الأردن بكل سهولة وسرعة، دون الحاجة للانتظار أو الوقوف في الطوابير. هدفنا هو تسهيل حياتك اليومية من خلال تجربة استخدام بسيطة وآمنة، تدعم التحول الرقمي وتساهم في تطوير خدمات المؤسسات العامة والخاصة. نحن نعمل باستمرار على تحسين أدائنا وتوسيع نطاق خدماتنا لتشمل قطاعات أكثر، مثل البنوك، شركات الاتصالات، والجهات الحكومية. رؤيتنا هي أن نكون المنصة الموحدة والأكثر موثوقية لحجز المواعيد إلكترونيًا في العالم العربي.
+          </p>
+          <div class="fields fields-2" style="margin-top:10px">
+            <div><label id="lblEmail">البريد الإلكتروني</label><input value="support@monasatak.example" readonly></div>
+            <div><label id="lblPhoneC">الهاتف</label><input value="+000-0000000" readonly></div>
+          </div>
+        </section>
+
+        <!-- LOGIN PAGE -->
+        <section id="login"><button class="btn ghost" onclick="show('home')" style="margin-bottom:10px;">العودة للرئيسية</button class="section card hidden">
+          <h3 id="loginTitle" style="margin:0 0 10px;font-weight:800">تسجيل الدخول</h3>
+          <form id="loginForm" class="fields" style="max-width:400px;margin:auto">
+            <div>
+              <label id="loginEmailLabel">البريد الإلكتروني</label>
+              <input type="email" id="loginEmail" placeholder="example@email.com">
+            </div>
+            <div>
+              <label id="loginPasswordLabel">كلمة المرور</label>
+              <input type="password" id="loginPassword" placeholder="••••••••">
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+              <button class="btn" type="submit" id="loginBtn">تسجيل الدخول</button>
+              <a href="#" id="guestLogin" class="btn secondary">الدخول كزائر</a>
+            </div>
+            <div style="margin-top:12px;text-align:center">
+              <a href="#" id="createAccount" style="color:var(--general);font-weight:600">إنشاء حساب جديد</a>
+            </div>
+          </form>
+        </section>
+
+        <!-- SUPPORT PAGE -->
+        <section id="support"><button class="btn ghost" onclick="show('home')" style="margin-bottom:10px;">العودة للرئيسية</button class="section card hidden">
+          <h3 style="margin:0 0 10px;font-weight:800" id="supportTitle">خدمة الدعم الذكي</h3>
+          <div id="quickQuestions" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;"></div>
+          <div id="chatBox" style="border:1px solid var(--border);border-radius:12px;padding:12px;height:350px;overflow-y:auto;background:var(--card)"></div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <input id="chatInput" placeholder="اكتب سؤالك هنا..." style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card)">
+            <button class="btn" id="sendChat">إرسال</button>
+          </div>
+        </section>
+
+        <!-- ADMIN PAGE (OPTIONAL) -->
+        <section id="admin"><button class="btn ghost" onclick="show('home')" style="margin-bottom:10px;">العودة للرئيسية</button class="section card hidden">
+          <h3 style="margin:0 0 10px;font-weight:800" id="adminTitle">لوحة الإدارة</h3>
+          <div id="adminStats" class="admin-grid"></div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+            <button class="btn ghost" id="btnExportAdminCsv">Export CSV</button>
+          </div>
+        </section>
+      </div>
+    `;
+    document.getElementById('app').innerHTML = _appHTML;
+  </script>
+
+  <!-- LOGIC + I18N -->
+  <script>
+    const i18n = {
+      ar: {
+        splashTitle:"مرحبًا بك في منصتك لحجز المواعيد",
+        splashSub:"جميع خدماتك المصرفية بانتظارك بكل سهولة.",
+        brand:"منصتك لحجز المواعيد — حجز المواعيد",
+        nav:["الرئيسية","الحجز","الخريطة","من نحن","حجوزاتي","تسجيل الدخول","الدعم"],
+        langBtn:"English",
+        mode:"الوضع الليلي",
+        heroBadge:"حجز إلكتروني آمن",
+        heroTitle:"احجز موعدك في  من أي مكان",
+        heroText:"اختر الجهة / الفرع ونوع الخدمة والوقت المناسب لك — بدون طوابير أو انتظار. وفر وقتك وأنجز معاملاتك بسهولة.",
+        ctaBook:"احجز الآن",
+        ctaMap:"فروعنا على الخريطة",
+        steps:["اختر الجهة / الفرع ونوع الخدمة","حدّد التاريخ والوقت وأدخل بياناتك","أكد الحجز واستلم تذكرتك (QR)"],
+        quick:"حجز سريع",
+        labels:{bank:"مزود الخدمة",branch:"الجهة / الفرع",service:"نوع الخدمة",date:"التاريخ",time:"الوقت",name:"الاسم",phone:"رقم الهاتف"},
+        confirm:"تأكيد الحجز",
+        bookTitle:"نموذج الحجز",
+        bookText:"املأ البيانات التالية لتأكيد حجزك.",
+        mapTitle:"خريطة فروع ",
+        mapNote:"المواقع تقريبية لأغراض العرض.",
+        myTitle:"حجوزاتي",
+        about:"عن المنصة",
+        aboutText:"نحن في <strong>منصتك لحجز المواعيد</strong> نؤمن بأن الوقت هو أثمن ما يملكه الإنسان. لذلك أنشأنا منصة رقمية ذكية تتيح لك حجز مواعيدك لدى المؤسسات والجهات المختلفة في الأردن بكل سهولة وسرعة، دون الحاجة للانتظار أو الوقوف في الطوابير. هدفنا هو تسهيل حياتك اليومية من خلال تجربة استخدام بسيطة وآمنة، تدعم التحول الرقمي وتساهم في تطوير خدمات المؤسسات العامة والخاصة. نحن نعمل باستمرار على تحسين أدائنا وتوسيع نطاق خدماتنا لتشمل قطاعات أكثر، مثل البنوك، شركات الاتصالات، والجهات الحكومية. رؤيتنا هي أن نكون المنصة الموحدة والأكثر موثوقية لحجز المواعيد إلكترونيًا في العالم العربي.",
+        email:"البريد الإلكتروني",
+        phone:"الهاتف",
+        footer:"© 2025 منصتك لحجز المواعيد — جميع الحقوق محفوظة.",
+        successTitle:"تم تأكيد الحجز",
+        successDesc:"احتفظ بهذه التذكرة لحين وصولك للفرع.",
+        close:"إغلاق",
+        csv:"CSV",
+        clear:"حذف الكل",
+        actions:{qr:"عرض QR",ics:"إضافة للتقويم",share:"مشاركة",del:"حذف"},
+        admin:"لوحة الإدارة",
+        export:"تصدير CSV",
+        citiesAll:"كل المدن",
+        notifyGranted:"تم تفعيل التذكيرات لهذا المتصفح.",
+        notifyDenied:"لم يتم السماح بالتنبيهات.",
+        // login / support
+        loginTitle:"تسجيل الدخول",
+        loginEmailLabel:"البريد الإلكتروني",
+        loginPasswordLabel:"كلمة المرور",
+        loginEmailPh:"example@email.com",
+        loginPasswordPh:"••••••••",
+        loginBtn:"تسجيل الدخول",
+        guestBtn:"الدخول كزائر",
+        createAccount:"إنشاء حساب جديد",
+        supportTitle:"خدمة الدعم الذكي",
+        supportPlaceholder:"اكتب سؤالك هنا...",
+        supportSend:"إرسال",
+        supportQuestions:[
+          "كيف أحجز موعد؟",
+          "ما هي الخدمات المتاحة؟",
+          "هل أستطيع تعديل موعدي؟",
+          "أين موقع الفرع الرئيسي؟",
+          "عندي مشكلة في التسجيل",
+          "أوقات العمل",
+          "هل المنصة تابعة لبنك؟",
+          "كيف أتواصل مع الدعم؟"
+        ],
+        conflictMsg:"لا يمكنك حجز أكثر من موعد في نفس الوقت. يوجد حجز آخر في هذا الوقت.",
+        fillAll:"يرجى تعبئة جميع الحقول",
+        phoneInvalid:"رقم الهاتف يجب أن يبدأ بـ 07 ويتكون من 10 أرقام",
+        noBookings:"لا توجد حجوزات بعد."
+      },
+      en: {
+        splashTitle:"Welcome to Your General Appointment Platform",
+        splashSub:"Your banking services are ready — hassle-free.",
+        brand:"Your General Appointment Platform — Appointments",
+        nav:["Home","Booking","Map","About","My Appointments","Login","Support"],
+        langBtn:"العربية",
+        mode:"Dark Mode",
+        heroBadge:"Secure online booking",
+        heroTitle:"Book your Your General Appointment Platform appointment from anywhere",
+        heroText:"Choose branch, service, date and time — skip queues and save your time.",
+        ctaBook:"Book Now",
+        ctaMap:"Branches Map",
+        steps:["Choose branch & service","Pick date/time and enter details","Confirm & get your QR ticket"],
+        quick:"Quick Booking",
+        labels:{bank:"Provider",branch:"Branch",service:"Service",date:"Date",time:"Time",name:"Full name",phone:"Mobile"},
+        confirm:"Confirm Booking",
+        bookTitle:"Booking Form",
+        bookText:"Fill in the following to confirm your booking.",
+        mapTitle:"Your General Appointment Platform Branches Map",
+        mapNote:"Locations are approximate for demo purposes.",
+        myTitle:"My Appointments",
+        about:"About",
+        aboutText:"At <strong>Your General Appointment Platform</strong>, we believe that time is your most valuable asset. That is why we built a smart digital platform that lets you book appointments with different institutions and organizations in Jordan easily and quickly, without waiting in queues. Our goal is to simplify your daily life through a simple and secure user experience that supports digital transformation and improves public and private services. We continuously enhance our platform and expand our services to cover more sectors such as banks, telecom companies, and government entities. Our vision is to be the most trusted and unified platform for online appointment booking in the Arab world.",
+        email:"Email",
+        phone:"Phone",
+        footer:"© 2025 Your General Appointment Platform — All rights reserved.",
+        successTitle:"Booking Confirmed",
+        successDesc:"Keep this ticket and present it upon arrival.",
+        close:"Close",
+        csv:"CSV",
+        clear:"Clear all",
+        actions:{qr:"Show QR",ics:"Add to Calendar",share:"Share",del:"Delete"},
+        admin:"Admin Dashboard",
+        export:"Export CSV",
+        citiesAll:"All cities",
+        notifyGranted:"Reminders enabled for this browser.",
+        notifyDenied:"Notifications are blocked.",
+        // login / support
+        loginTitle:"Login",
+        loginEmailLabel:"Email",
+        loginPasswordLabel:"Password",
+        loginEmailPh:"example@email.com",
+        loginPasswordPh:"••••••••",
+        loginBtn:"Login",
+        guestBtn:"Continue as Guest",
+        createAccount:"Create a new account",
+        supportTitle:"Smart Support Service",
+        supportPlaceholder:"Type your question here...",
+        supportSend:"Send",
+        supportQuestions:[
+          "How do I book an appointment?",
+          "What services are available?",
+          "Can I edit my booking?",
+          "Where is the main branch?",
+          "I have a problem with registration",
+          "Working hours",
+          "Is this platform part of a bank?",
+          "How can I contact support?"
+        ],
+        conflictMsg:"You cannot book two appointments at the same time. There is already an appointment at this time.",
+        fillAll:"Please fill all required fields",
+        phoneInvalid:"Mobile must start with 07 and be 10 digits",
+        noBookings:"No appointments yet."
+      }
+    };
+
+    let lang = 'ar';
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    function t(){ return i18n[lang]; }
+
+    function applyLang(){
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+      $('#splashTitle').textContent = t().splashTitle;
+      $('#splashSub').textContent = t().splashSub;
+      $('#brandTitle').textContent = t().brand;
+      [$('#navHome'),$('#navBooking'),$('#navMap'),$('#navAbout'),$('#navMy'),$('#navLogin'),$('#navSupport')]
+        .forEach((el,i)=>{ if(el) el.textContent = t().nav[i]; });
+      $('#langBtn').textContent = t().langBtn;
+
+      $('#heroBadge').textContent = t().heroBadge;
+      $('#heroTitle').textContent = t().heroTitle;
+      $('#heroText').textContent = t().heroText;
+      $('#ctaBook').textContent = t().ctaBook;
+      $('#ctaMap').textContent = t().ctaMap;
+      [$('#st1'),$('#st2'),$('#st3')].forEach((el,i)=> el && (el.textContent = t().steps[i]));
+      $('#quickBookTitle').textContent = t().quick;
+
+      const L = t().labels;
+      ['lblBank','lblBranch','lblService','lblDate','lblTime','lblName','lblPhone']
+        .forEach((id,i)=> $('#'+id).textContent = [L.bank,L.branch,L.service,L.date,L.time,L.name,L.phone][i]);
+      ['lblBank2','lblBranch2','lblService2','lblDate2','lblTime2','lblName2','lblPhone2']
+        .forEach((id,i)=> $('#'+id).textContent = [L.bank,L.branch,L.service,L.date,L.time,L.name,L.phone][i]);
+
+      $('#btnConfirm').textContent = t().confirm;
+      $('#btnConfirm2').textContent = t().confirm;
+      $('#bookFullTitle').textContent = t().bookTitle;
+      $('#bookFullText').textContent = t().bookText;
+      $('#mapTitle').textContent = t().mapTitle;
+      $('#mapNote').textContent = t().mapNote;
+      $('#aboutTitle').textContent = t().about;
+      $('#aboutText').innerHTML = t().aboutText;
+      $('#lblEmail').textContent = t().email;
+      $('#lblPhoneC').textContent = t().phone;
+      $('#footerTxt').textContent = t().footer;
+      $('#successTitle').textContent = t().successTitle;
+      $('#successDesc').textContent = t().successDesc;
+      $('#btnClose').textContent = t().close;
+      $('#myTitle').textContent = t().myTitle;
+      $('#btnExportCsv').textContent = t().csv;
+      $('#btnClearAll').textContent = t().clear;
+      const firstCity = $('#cityFilter') && $('#cityFilter').querySelector('option');
+      if(firstCity) firstCity.textContent = t().citiesAll;
+      $('#adminTitle').textContent = t().admin;
+      $('#btnExportAdminCsv').textContent = t().export;
+
+      // Login
+      $('#loginTitle').textContent = t().loginTitle;
+      $('#loginEmailLabel').textContent = t().loginEmailLabel;
+      $('#loginPasswordLabel').textContent = t().loginPasswordLabel;
+      $('#loginBtn').textContent = t().loginBtn;
+      $('#guestLogin').textContent = t().guestBtn;
+      $('#createAccount').textContent = t().createAccount;
+      $('#loginEmail').placeholder = t().loginEmailPh;
+      $('#loginPassword').placeholder = t().loginPasswordPh;
+
+      // Support
+      $('#supportTitle').textContent = t().supportTitle;
+      $('#chatInput').placeholder = t().supportPlaceholder;
+      $('#sendChat').textContent = t().supportSend;
+
+
+      // Update provider select option labels
+      ['providerSelect','providerSelect2'].forEach(pid=>{
+        const sel = document.getElementById(pid);
+        if(sel && sel.options.length){
+          const first = sel.options[0];
+          first.textContent = (lang === 'ar') ? 'اختر المزود' : 'Select provider';
+          if(sel.options.length > 1){
+            const bankOpt = sel.options[1];
+            bankOpt.textContent = (lang === 'ar') ? 'بنك' : 'Bank';
+          }
+        }
+      });
+      // Update booking placeholders for name / phone
+      const name1 = document.getElementById('nameInput');
+      const name2 = document.getElementById('nameInput2');
+      const phone1 = document.getElementById('phoneInput');
+      const phone2 = document.getElementById('phoneInput2');
+      if(name1) name1.placeholder = (lang === 'ar') ? 'الاسم الثلاثي' : 'Full name';
+      if(name2) name2.placeholder = (lang === 'ar') ? 'الاسم الثلاثي' : 'Full name';
+      if(phone1) phone1.placeholder = (lang === 'ar') ? '07XXXXXXXX' : 'Mobile number';
+      if(phone2) phone2.placeholder = (lang === 'ar') ? '07XXXXXXXX' : 'Mobile number';
+
+      // Update branch selects labels after language switch
+      ['branchSelect','branchSelect2'].forEach(id=>{
+        const sel = document.getElementById(id);
+        if(sel){
+          Array.from(sel.options).forEach(o=>{
+            const city = o.dataset.city || '';
+            const name = o.dataset.name || o.value;
+            if(city){
+              const cityLabel = translateCityName(city);
+              const branchLabel = translateBranchName(name);
+              o.textContent = cityLabel+' — '+branchLabel;
+            }
+          });
+        }
+      });
+
+      // Update city filter text options
+      const citySel = document.getElementById('cityFilter');
+      if(citySel){
+        Array.from(citySel.options).forEach(o=>{
+          if(o.value === ''){
+            o.textContent = t().citiesAll;
+          } else if(o.dataset.city){
+            o.textContent = translateCityName(o.dataset.city);
+          }
+        });
+      }
+
+      const qq = $('#quickQuestions');
+      if(qq){
+        qq.innerHTML = '';
+        t().supportQuestions.forEach(qText=>{
+          const b = document.createElement('button');
+          b.className = 'chip';
+          b.textContent = qText;
+          qq.appendChild(b);
+        });
+        attachQuickQuestionHandlers();
+      }
+    }
+
+    function show(id){
+      ['home','booking','map','about','my','admin','login','support']
+        .forEach(x => { const el = $('#'+x); if(el) el.classList.add('hidden'); });
+      const target = $('#'+id);
+      if(target) target.classList.remove('hidden');
+
+      $$('.navlink').forEach(a=>a.classList.remove('active'));
+      const link = $$('.navlink').find(a=>a.dataset.target === id);
+      if(link) link.classList.add('active');
+
+      if(id === 'map') setTimeout(initMapIfNeeded,0);
+      if(id === 'my') renderMy();
+      if(id === 'admin') renderAdmin();
+
+      location.hash = id;
+    }
+
+    window.addEventListener('hashchange',()=>{
+      const id = location.hash.replace('#','') || 'home';
+      show(id);
+    });
+
+    $$('.navlink, [data-target]').forEach(el=>{
+      el.addEventListener('click',e=>{
+        e.preventDefault();
+        const id = el.dataset.target;
+        if(id) show(id);
+      });
+    });
+
+    // BRANCHES
+    const BRANCHES = [
+      {city:'عمّان',name:'البنك العربي',lat:31.95,lng:35.91,crowd:1},
+      {city:'عمّان',name:'بنك الاسكان',lat:31.96,lng:35.90,crowd:2},
+      {city:'عمّان',name:'بنك الاتحاد',lat:31.97,lng:35.92,crowd:1},
+      {city:'عمّان',name:'بنك القاهرة عمان',lat:31.94,lng:35.93,crowd:2},
+      {city:'عمّان',name:'كابيتل بنك',lat:31.93,lng:35.89,crowd:3}
+    ];
+    const CITIES = [...new Set(BRANCHES.map(b=>b.city))].sort();
+    const CITY_EN = {
+      "عمّان":"Amman"
+    };
+    const BRANCH_NAME_EN = {
+      "البنك العربي":"Arab Bank",
+      "بنك الاسكان":"Housing Bank",
+      "بنك الاتحاد":"Etihad Bank",
+      "بنك القاهرة عمان":"Cairo Amman Bank",
+      "كابيتل بنك":"Capital Bank"
+    };
+    const SERVICE_EN = {
+      "سحب وإيداع":"Cash deposit/withdrawal",
+      "صرف شيكات":"Cheque cashing",
+      "فتح حساب":"Open account",
+      "تحويلات مالية":"Money transfers",
+      "استفسار عن الرصيد":"Balance inquiry",
+      "الدعم الفني المباشر":"Technical support"
+    };
+
+    function translateCityName(name){
+      if(lang === 'en') return CITY_EN[name] || name;
+      return name;
+    }
+    function translateBranchName(name){
+      if(lang === 'en') return BRANCH_NAME_EN[name] || name;
+      return name;
+    }
+    function translateServiceName(name){
+      if(lang === 'en'){
+        return SERVICE_EN[name] || name;
+      }
+      return name;
+    }
+
+
+    function fillBranches(id){
+      const sel = document.querySelector(id);
+      if(!sel) return;
+      sel.innerHTML = '';
+      BRANCHES.forEach(b=>{
+        const o = document.createElement('option');
+        o.value = b.name;
+        o.dataset.city = b.city;
+        o.dataset.name = b.name;
+        const cityLabel = translateCityName(b.city);
+        const branchLabel = translateBranchName(b.name);
+        o.textContent = cityLabel+' — '+branchLabel;
+        sel.appendChild(o);
+      });
+    }
+    function fillCities(){
+      const citySel = $('#cityFilter');
+      if(!citySel) return;
+      citySel.innerHTML='';
+      const optAll = document.createElement('option');
+      optAll.value='';
+      optAll.textContent = t().citiesAll;
+      citySel.appendChild(optAll);
+      CITIES.forEach(c=>{
+        const o = document.createElement('option');
+        o.value=c;
+        o.dataset.city = c;
+        o.textContent = translateCityName(c);
+        citySel.appendChild(o);
+      });
+      citySel.onchange = refreshMap;
+    }
+
+    function tomorrowISO(){
+      return new Date(Date.now()+24*3600*1000).toISOString().slice(0,10);
+    }
+    function setDefaults(){
+      const d = tomorrowISO();
+      const di1 = $('#dateInput'), di2 = $('#dateInput2');
+      if(di1) di1.value = d;
+      if(di2) di2.value = d;
+    }
+    function idGen(){
+      return 'U'+Math.random().toString(36).slice(2,8).toUpperCase()+Date.now().toString(36).toUpperCase();
+    }
+
+    function createBooking(q){
+      const g = id => document.getElementById(id).value;
+      const b = {
+        id:idGen(),
+        bankId:'general',
+        branch:g(q?'branchSelect':'branchSelect2'),
+        service:g(q?'serviceSelect':'serviceSelect2'),
+        date:g(q?'dateInput':'dateInput2'),
+        time:g(q?'timeInput':'timeInput2'),
+        name:g(q?'nameInput':'nameInput2').trim(),
+        phone:g(q?'phoneInput':'phoneInput2').trim(),
+        createdAt:new Date().toISOString(),
+        reminderMinutes:60,
+        notified:false
+      };
+      if(!b.name || !b.phone || !b.date || !b.time || !b.branch || !b.service){
+        alert(t().fillAll);
+        return null;
+      }
+      if(!/^07\d{8}$/.test(b.phone)){
+        alert(t().phoneInvalid);
+        return null;
+      }
+      return b;
+    }
+
+    function getBookings(){
+      return JSON.parse(localStorage.getItem('beu_bookings') || '[]');
+    }
+    function setBookings(list){
+      localStorage.setItem('beu_bookings', JSON.stringify(list));
+    }
+
+    function hasTimeConflict(b){
+      const list = getBookings();
+      return list.some(x => x.date === b.date && x.time === b.time);
+    }
+
+    function saveBooking(b){
+      const key='beu_bookings';
+      const list=JSON.parse(localStorage.getItem(key)||'[]');
+      list.push(b);
+      localStorage.setItem(key, JSON.stringify(list));
+    }
+
+    function onSubmit(e,q){
+      e.preventDefault();
+      const b = createBooking(q);
+      if(!b) return;
+      if(hasTimeConflict(b)){
+        alert(t().conflictMsg);
+        return;
+      }
+      saveBooking(b);
+      renderSuccess(b);
+      scheduleReminders();
+      renderMy();
+    }
+
+    document.addEventListener('submit', function(e){
+      if(e.target && e.target.id==='quickForm'){ onSubmit(e,true); }
+      if(e.target && e.target.id==='fullForm'){ onSubmit(e,false); }
+    });
+
+    function renderSuccess(b){
+      $('#successTitle').textContent = t().successTitle;
+      $('#successDesc').textContent = t().successDesc;
+      const branchLabel = translateBranchName(b.branch.split('—').pop().trim() || b.branch);
+      const serviceLabel = translateServiceName(b.service);
+      $('#ticketMeta').textContent = `${branchLabel} • ${serviceLabel} • ${b.date} ${b.time}`;
+      $('#successModal').classList.add('open');
+      QRCode.toCanvas($('#qrCanvas'), JSON.stringify(b), {width:180});
+    }
+    $('#btnClose').addEventListener('click',()=>$('#successModal').classList.remove('open'));
+
+    function padEndTime(time,mins){
+      const [h,m] = time.split(':').map(Number);
+      const d = new Date();
+      d.setHours(h,m+mins,0,0);
+      return d.toTimeString().slice(0,5).replace(':','');
+    }
+
+    function downloadICS(b){
+      const dt=(d,t)=>d.replace(/-/g,'')+'T'+t.replace(':','')+'00';
+      const body=[
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Your General Appointment Platform//Appointments//EN',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'BEGIN:VEVENT',
+        'UID:'+b.id+'@beu',
+        'DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z',
+        'DTSTART:'+dt(b.date,b.time),
+        'DTEND:'+dt(b.date, padEndTime(b.time,30)),
+        'SUMMARY:Appointment — '+b.branch,
+        'DESCRIPTION:Your General Appointment Platform — '+b.service+' — Ticket '+b.id,
+        'LOCATION:'+b.branch,
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
+      const blob = new Blob([body],{type:'text/calendar;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download='appointment.ics';
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    }
+
+    function mkBtn(text,fn){
+      const b=document.createElement('button');
+      b.className='btn ghost';
+      b.textContent=text;
+      b.onclick=fn;
+      return b;
+    }
+
+    function renderMy(){
+      const wrap = $('#myList');
+      if(!wrap) return;
+      wrap.innerHTML='';
+      const list = getBookings().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+      if(!list.length){
+        wrap.innerHTML=`<div class="muted">${t().noBookings}</div>`;
+        return;
+      }
+      list.forEach(b=>{
+        const div=document.createElement('div');
+        div.className='item';
+        const left=document.createElement('div');
+        let branchDisplay = b.branch;
+        // Try to extract branch name after dash if stored as "city — name"
+        if(lang === 'en'){
+          const parts = b.branch.split('—');
+          if(parts.length === 2){
+            const cityAr = parts[0].trim();
+            const nameAr = parts[1].trim();
+            const cityLabel = translateCityName(cityAr);
+            const branchLabel = translateBranchName(nameAr);
+            branchDisplay = cityLabel+' — '+branchLabel;
+          } else {
+            branchDisplay = translateBranchName(b.branch);
+          }
+        }
+        const serviceDisplay = translateServiceName(b.service);
+        left.innerHTML = `
+          <div style="font-weight:700">${branchDisplay}</div>
+          <div class="muted" style="font-size:13px">${serviceDisplay} • ${b.date} ${b.time}</div>
+          <div class="muted" style="font-size:12px">#${b.id}</div>
+        `;
+        const act=document.createElement('div');
+        act.className='actions';
+        const btnQR=mkBtn(t().actions.qr,()=>{
+          $('#successModal').classList.add('open');
+          $('#ticketMeta').textContent = `${b.branch} • ${b.service} • ${b.date} ${b.time}`;
+          QRCode.toCanvas($('#qrCanvas'), JSON.stringify(b), {width:180});
+        });
+        const btnICS=mkBtn(t().actions.ics,()=>downloadICS(b));
+        const btnShare=mkBtn(t().actions.share,()=>shareBooking(b));
+        const btnDel=mkBtn(t().actions.del,()=>{
+          const arr=getBookings().filter(x=>x.id!==b.id);
+          setBookings(arr);
+          renderMy();
+        });
+        act.append(btnQR,btnICS,btnShare,btnDel);
+        div.append(left,act);
+        wrap.appendChild(div);
+      });
+    }
+
+    function exportCSV(rows,name){
+      const csv = rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob=new Blob([csv],{type:'text/csv'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download=name;
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    }
+
+    document.addEventListener('click', function(e){
+      if(e.target && e.target.id==='btnExportCsv'){
+        const list=getBookings();
+        const rows=[['id','branch','service','date','time','name','phone']]
+          .concat(list.map(b=>[b.id,b.branch,b.service,b.date,b.time,b.name,b.phone]));
+        exportCSV(rows,'appointments.csv');
+      }
+      if(e.target && e.target.id==='btnClearAll'){
+        if(confirm(lang==='ar'?'تأكيد حذف كل الحجوزات؟':'Clear all appointments?')){
+          setBookings([]);
+          renderMy();
+        }
+      }
+      if(e.target && e.target.id==='btnExportAdminCsv'){
+        const list=getBookings();
+        const rows=[['id','branch','service','date','time','name','phone','createdAt']]
+          .concat(list.map(b=>[b.id,b.branch,b.service,b.date,b.time,b.name,b.phone,b.createdAt]));
+        exportCSV(rows,'admin_report.csv');
+      }
+    });
+
+    async function shareBooking(b){
+      const text = (lang==='ar'
+        ? `موعد  — ${b.branch}\nنوع الخدمة: ${b.service}\n${b.date} ${b.time}\nكود: ${b.id}`
+        : `Your General Appointment Platform appointment — ${b.branch}\nService: ${b.service}\n${b.date} ${b.time}\nTicket: ${b.id}`);
+      if(navigator.share){
+        try{ await navigator.share({text}); }catch(e){}
+      } else {
+        const url='https://wa.me/?text='+encodeURIComponent(text);
+        window.open(url,'_blank');
+      }
+    }
+
+    let map,markersLayer;
+    function initMapIfNeeded(){
+      if(map){ refreshMap(); return; }
+      map = L.map('mapDiv').setView([31.95,35.91],6);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+      markersLayer=L.layerGroup().addTo(map);
+      refreshMap();
+    }
+    function crowdColor(c){return c>=3?'red':(c==2?'orange':'green');}
+    function refreshMap(){
+      if(!markersLayer) return;
+      markersLayer.clearLayers();
+      const city=$('#cityFilter').value;
+      const list=BRANCHES.filter(b=>!city||b.city===city);
+      list.forEach(b=>{
+        const cityLabel = translateCityName(b.city);
+        const branchLabel = translateBranchName(b.name);
+        L.circleMarker([b.lat,b.lng],{radius:8,color:crowdColor(b.crowd)})
+          .addTo(markersLayer)
+          .bindPopup(`<b>${lang==='ar'?'':'Your General Appointment Platform'}</b><br>${cityLabel} — ${branchLabel}<br>${lang==='ar'?'الازدحام':'Crowd'}: ${b.crowd}`);
+      });
+      if(list.length){
+        const bounds=L.latLngBounds(list.map(b=>[b.lat,b.lng]));
+        map.fitBounds(bounds.pad(0.2));
+      }
+    }
+
+    function renderAdmin(){
+      const box=$('#adminStats');
+      if(!box) return;
+      box.innerHTML='';
+      const list=getBookings();
+      const byDay={};
+      list.forEach(b=>{byDay[b.date]=(byDay[b.date]||0)+1;});
+      const byBranch={};
+      list.forEach(b=>{byBranch[b.branch]=(byBranch[b.branch]||0)+1;});
+      for(const [k,v] of Object.entries(byDay)){
+        box.appendChild(statItem((lang==='ar'?'حجوزات يوم ':'Day ')+k,v));
+      }
+      for(const [k,v] of Object.entries(byBranch)){
+        box.appendChild(statItem((lang==='ar'?'حجوزات فرع ':'Branch ')+k,v));
+      }
+    }
+    function statItem(label,val){
+      const d=document.createElement('div');
+      d.className='stat';
+      d.innerHTML=`<div>${label}</div><div style="font-weight:800">${val}</div>`;
+      return d;
+    }
+
+    function scheduleReminders(){
+      if(!('Notification' in window)) return;
+      if(Notification.permission==='default'){
+        Notification.requestPermission().then(p=>{
+          alert(p==='granted'?t().notifyGranted:t().notifyDenied);
+        });
+      }
+      clearInterval(window.__remTimer);
+      window.__remTimer=setInterval(()=>{
+        const list=getBookings();
+        const now=new Date();
+        list.forEach(b=>{
+          if(b.notified) return;
+          const dt=new Date(b.date+'T'+b.time);
+          const diff=dt-now;
+          const mins=b.reminderMinutes||60;
+          if(diff>0 && diff<mins*60*1000){
+            new Notification(t().brand,{
+              body:(lang==='ar'?'تذكير بموعدك في ':'Reminder: ')+b.branch+' — '+b.date+' '+b.time
+            });
+            b.notified=true;
+          }
+        });
+        setBookings(list);
+      },60*1000);
+    }
+
+    // Dynamic Service Provider Logic
+    function updateServices(selectId, serviceSelectId){
+      const provider = document.getElementById(selectId).value;
+      const serviceSelect = document.getElementById(serviceSelectId);
+      if(!serviceSelect) return;
+      serviceSelect.innerHTML='';
+      let options=[];
+      if(provider === 'bank'){
+        options = lang==='ar'
+          ? ['سحب وإيداع','صرف شيكات','فتح حساب','تحويلات مالية','استفسار عن الرصيد','الدعم الفني المباشر']
+          : ['Cash deposit/withdrawal','Cheque cashing','Open account','Money transfers','Balance inquiry','Technical support'];
+      } else if(false){
+        options = lang==='ar'
+          ? ['استعلام عن الرصيد المتبقي','دفع الفواتير','فتح خط جديد','تبديل SIM','تحويل الرصيد','الدعم الفني المباشر']
+          : ['Balance inquiry','Bill payment','New line activation','SIM replacement','Credit transfer','Technical support'];
+      } else {
+        options = [lang==='ar'?'يرجى اختيار المزود أولاً':'Please choose a provider first'];
+      }
+      options.forEach(o=>{
+        const opt=document.createElement('option');
+        opt.textContent=o;
+        serviceSelect.appendChild(opt);
+      });
+    }
+
+    ['providerSelect','providerSelect2'].forEach(id=>{
+      const serviceId = id === 'providerSelect' ? 'serviceSelect' : 'serviceSelect2';
+      const el=document.getElementById(id);
+      if(el) el.addEventListener('change',()=>updateServices(id,serviceId));
+    });
+
+    // Chat support
+    const chatBox = document.getElementById('chatBox');
+    const chatInput = document.getElementById('chatInput');
+    const sendChat = document.getElementById('sendChat');
+
+    function appendMsg(text,sender='bot'){
+      const msg=document.createElement('div');
+      msg.style.margin='6px 0';
+      msg.style.textAlign = sender === 'bot' ? 'right' : 'left';
+      msg.innerHTML = sender === 'bot'
+        ? `<div style="background:var(--general);color:#fff;display:inline-block;padding:8px 12px;border-radius:12px;max-width:80%">${text}</div>`
+        : `<div style="background:var(--accent);color:var(--text);display:inline-block;padding:8px 12px;border-radius:12px;max-width:80%">${text}</div>`;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function aiReply(userText){
+      const txt = userText.trim();
+      if(!txt) return lang==='ar'
+        ? "يرجى كتابة سؤالك أولاً."
+        : "Please type your question first.";
+      const lower = txt.toLowerCase();
+
+      if(lang==='ar'){
+        if(txt.includes("مرحبا") || txt.includes("السلام") || txt.includes("اهلا") || txt.includes("هلا"))
+          return "أهلاً بك 👋! كيف يمكنني مساعدتك اليوم؟";
+
+        if(txt.includes("حجز") || txt.includes("موعد") || txt.includes("احجز"))
+          return "يمكنك حجز موعدك بسهولة من صفحة الحجز أعلاه. اختر الخدمة والتاريخ والوقت المناسب لك.";
+
+        if(txt.includes("الخدمات") || txt.includes("شو بتقدمو") || txt.includes("ما هي الخدمات") || txt.includes("الخدمة"))
+          return "نقدم خدمات عامة لحجز المواعيد لأي مؤسسة أو جهة. يمكنك اختيار الجهة ونوع الخدمة حسب احتياجك.";
+
+        if(txt.includes("تعديل") || txt.includes("احذف") || txt.includes("الغاء") || txt.includes("إلغاء"))
+          return "يمكنك تعديل أو حذف مواعيدك من صفحة (حجوزاتي) بسهولة.";
+
+        if(txt.includes("مشكلة") || txt.includes("ما بيفتح") || txt.includes("عطل") || txt.includes("خطأ"))
+          return "يرجى تحديث الصفحة أو التأكد من اتصال الإنترنت. إذا استمرت المشكلة، راسلنا عبر البريد support@monasatak.example.";
+
+        if(txt.includes("الفرع") || txt.includes("المكان") || txt.includes("وين") || txt.includes("اين"))
+          return "يمكنك عرض مواقع الفروع أو الجهات على الخريطة من صفحة (الخريطة).";
+
+        if(txt.includes("من انتم") || txt.includes("شو هاي") || txt.includes("ما هذه المنصة") || txt.includes("مين"))
+          return "نحن منصة إلكترونية عامة لحجز المواعيد لأي جهة بسهولة وسرعة — بدون انتظار أو طوابير.";
+
+        if(txt.includes("الدوام") || txt.includes("اوقات العمل") || txt.includes("متى"))
+          return "أوقات العمل تختلف حسب الجهة التي تختارها. عادةً من الأحد إلى الخميس، 9 صباحًا إلى 5 مساءً.";
+
+        if(txt.includes("تواصل") || txt.includes("دعم") || txt.includes("مساعدة"))
+          return "يمكنك التواصل معنا عبر البريد support@monasatak.example أو من هنا عبر الرد الآلي.";
+
+        return "شكرًا لسؤالك! حاليًا يمكنني الرد على الأسئلة العامة مثل (المواعيد، الخدمات، الدعم، المشاكل).";
+      } else {
+        if(lower.includes("hello") || lower.includes("hi") || lower.includes("good morning") || lower.includes("good evening"))
+          return "Hello 👋! How can I help you today?";
+
+        if(lower.includes("book") || lower.includes("appointment") || lower.includes("reserve"))
+          return "You can book your appointment from the Booking page. Choose the service, date and time and confirm.";
+
+        if(lower.includes("service") || lower.includes("services") || lower.includes("what do you offer"))
+          return "We provide a general platform to book appointments for different institutions. Choose the provider and service you need.";
+
+        if(lower.includes("edit") || lower.includes("change") || lower.includes("cancel") || lower.includes("delete"))
+          return "You can edit or delete your bookings from the (My Appointments) page.";
+
+        if(lower.includes("problem") || lower.includes("error") || lower.includes("bug") || lower.includes("not working"))
+          return "Please refresh the page or check your internet connection. If the issue continues, contact us at support@monasatak.example.";
+
+        if(lower.includes("branch") || lower.includes("location") || lower.includes("where") )
+          return "You can see all branches and locations from the (Map) page.";
+
+        if(lower.includes("who are you") || lower.includes("what is this") || lower.includes("platform"))
+          return "We are an online platform for booking appointments for different providers quickly and easily.";
+
+        if(lower.includes("working hours") || lower.includes("open") || lower.includes("close"))
+          return "Working hours depend on the selected provider, but typically Sunday–Thursday, 9:00 AM to 5:00 PM.";
+
+        if(lower.includes("contact") || lower.includes("support") || lower.includes("help"))
+          return "You can contact us by email at support@monasatak.example or chat here via this assistant.";
+
+        return "Thank you for your question! For now I can answer general questions about appointments, services and support.";
+      }
+    }
+
+    function attachQuickQuestionHandlers(){
+      const quickButtons = document.querySelectorAll('#quickQuestions .chip');
+      if(!quickButtons.length || !chatBox || !chatInput || !sendChat) return;
+      quickButtons.forEach(btn=>{
+        btn.onclick = () => {
+          const question = btn.textContent.trim();
+          appendMsg(question,'user');
+          setTimeout(()=>{
+            appendMsg(lang==='ar'?"جارٍ المعالجة ... ⏳":"Processing ... ⏳",'bot');
+            setTimeout(()=>{
+              // remove last "processing" bubble
+              const msgs = chatBox.querySelectorAll('div');
+              if(msgs.length) msgs[msgs.length-1].remove();
+              appendMsg(aiReply(question),'bot');
+            },800);
+          },300);
+        };
+      });
+    }
+
+    if(sendChat && chatInput && chatBox){
+      sendChat.addEventListener('click',()=>{
+        const text=chatInput.value.trim();
+        if(!text) return;
+        appendMsg(text,'user');
+        chatInput.value='';
+        setTimeout(()=>{
+          appendMsg(lang==='ar'?"جارٍ المعالجة ... ⏳":"Processing ... ⏳",'bot');
+          setTimeout(()=>{
+            const msgs = chatBox.querySelectorAll('div');
+            if(msgs.length) msgs[msgs.length-1].remove();
+            appendMsg(aiReply(text),'bot');
+          },800);
+        },300);
+      });
+      chatInput.addEventListener('keypress',e=>{
+        if(e.key==='Enter') sendChat.click();
+      });
+    }
+
+    function init(){
+      setTimeout(()=>$('#splash').classList.add('hide'),1500);
+      fillBranches('#branchSelect');
+      fillBranches('#branchSelect2');
+      fillCities();
+      setDefaults();
+      // initial services lists
+      updateServices('providerSelect','serviceSelect');
+      updateServices('providerSelect2','serviceSelect2');
+
+      $('#langBtn').addEventListener('click',()=>{
+        lang = (lang==='ar' ? 'en' : 'ar');
+        applyLang();
+        // update services text when language changes
+        updateServices('providerSelect','serviceSelect');
+        updateServices('providerSelect2','serviceSelect2');
+        refreshMap();
+      });
+      $('#modeBtn').addEventListener('click',()=>{
+        const r=document.documentElement;
+        r.classList.toggle('dark');
+        $('#modeBtn').textContent = r.classList.contains('dark') ? '☀️' : '🌙';
+      });
+
+      applyLang();
+      const hash = location.hash.replace('#','');
+      show(hash||'home');
+      scheduleReminders();
+    }
+
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>
